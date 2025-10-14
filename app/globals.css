@@ -51,3 +51,24 @@ body {
 .socket:hover {
   transform: scale(1.2);
 }
+
+/* Animated edge styling */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.animated-edge {
+  stroke-dasharray: 5, 5;
+  animation: dash 1s linear infinite;
+  stroke: #10b981;
+  stroke-width: 2;
+}
+
+.animated-edge-error {
+  stroke-dasharray: 5, 5;
+  animation: dash 1s linear infinite;
+  stroke: #ef4444;
+  stroke-width: 2;
+}
