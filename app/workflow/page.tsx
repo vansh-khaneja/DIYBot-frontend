@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   ReactFlow,
   Node,
@@ -18,6 +19,8 @@ import CustomNode from '../../components/CustomNode';
 import NodeSelectionSidebar from '../../components/NodeSelectionSidebar';
 import NodeConfigBottomBar from '../../components/NodeConfigBottomBar';
 import ExecutionResults from '../../components/ExecutionResults';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Node data structure for React Flow
 interface NodeData {
@@ -69,6 +72,7 @@ const nodeTypes = {
 
 
 export default function WorkflowBuilder() {
+  const searchParams = useSearchParams();
   const [nodesData, setNodesData] = useState<NodesResponse['data'] | null>(null);
   const [showNodeSidebar, setShowNodeSidebar] = useState(false);
   const [showConfigSidebar, setShowConfigSidebar] = useState(false);
@@ -86,6 +90,28 @@ export default function WorkflowBuilder() {
   useEffect(() => {
     fetchNodes();
   }, []);
+
+  // If ?id= is present, fetch saved workflow and load into canvas
+  useEffect(() => {
+    const id = searchParams?.get('id');
+    if (!id) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/workflows/${id}`);
+        const data = await res.json();
+        if (data.success && data.data?.data) {
+          const wf = data.data.data;
+          if (wf.nodes && wf.edges) {
+            setNodes(wf.nodes as any);
+            setEdges(wf.edges as any);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load workflow', e);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const fetchNodes = async () => {
     try {
@@ -141,7 +167,7 @@ export default function WorkflowBuilder() {
     }
   };
 
-  const handleSaveWorkflow = () => {
+  const buildWorkflowPayload = () => {
     const workflowData = {
       nodes: nodes.map(node => ({
         id: node.id,
@@ -159,6 +185,11 @@ export default function WorkflowBuilder() {
       timestamp: new Date().toISOString(),
       name: `Workflow_${new Date().toISOString().split('T')[0]}_${Date.now()}`
     };
+    return workflowData;
+  };
+
+  const handleSaveWorkflow = () => {
+    const workflowData = buildWorkflowPayload();
 
     // Create and download JSON file
     const jsonString = JSON.stringify(workflowData, null, 2);
@@ -174,6 +205,24 @@ export default function WorkflowBuilder() {
     URL.revokeObjectURL(url);
     
     alert('Workflow saved as JSON file!');
+  };
+
+  const handleSaveWorkflowToBackend = async () => {
+    try {
+      const payload = buildWorkflowPayload();
+      const res = await fetch(`${API_BASE}/api/v1/workflows/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: payload.name, data: { nodes: payload.nodes, edges: payload.edges } })
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`Failed to save workflow: ${res.status} ${t}`);
+      }
+      alert('Workflow saved to backend (SQLite).');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to save workflow');
+    }
   };
 
   const handleLoadWorkflow = (workflowData: any) => {
@@ -440,6 +489,21 @@ export default function WorkflowBuilder() {
                 <span className="text-gray-200">DIYBot Workflow Builder</span>
                 <div className="h-6 w-px bg-gray-600"></div>
                 <button
+                  onClick={handleSaveWorkflowToBackend}
+                  disabled={nodes.length === 0}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    nodes.length === 0
+                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed border border-gray-500'
+                      : 'bg-red-500 hover:bg-red-600 text-white border border-red-400 hover:border-red-300 shadow-sm hover:shadow-md'
+                  }`}
+                  title="Save workflow to backend (SQLite)"
+                >
+                  <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 3a1 1 0 00-1 1v12a1 1 0 001.555.832L10 14.2l5.445 2.632A1 1 0 0017 16V4a1 1 0 00-1-1H4z" />
+                  </svg>
+                  Save
+                </button>
+                <button
                   onClick={handleSaveWorkflow}
                   disabled={nodes.length === 0}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -447,12 +511,12 @@ export default function WorkflowBuilder() {
                       ? 'bg-gray-600 text-gray-400 cursor-not-allowed border border-gray-500'
                       : 'bg-gray-600 hover:bg-gray-500 text-white border border-gray-500 hover:border-gray-400 shadow-sm hover:shadow-md'
                   }`}
-                  title="Save workflow as JSON file"
+                  title="Download workflow as JSON file"
                 >
                   <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                   </svg>
-                  Save
+                  Download JSON
                 </button>
                 <button
                   onClick={() => document.getElementById('workflow-upload')?.click()}
