@@ -18,10 +18,10 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
   const hasResults = Object.keys(data.response_inputs || {}).length > 0;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-700 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+      <div className="bg-[#1a1a1a] rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden border border-[#404040]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-600">
+        <div className="flex items-center justify-between p-4 border-b border-[#404040] bg-[#2a2a2a]">
           <h2 className="text-lg font-semibold text-white">Execution Results</h2>
           <button
             onClick={onClose}
@@ -34,13 +34,13 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-600">
+        <div className="flex border-b border-[#404040] bg-[#1a1a1a]">
           <button
             onClick={() => setActiveTab('results')}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === 'results'
-                ? 'text-white border-b-2 border-red-500'
-                : 'text-gray-300 hover:text-white'
+                ? 'text-white border-b-2 border-[#a78bfa] bg-[#2a2a2a]'
+                : 'text-gray-300 hover:text-white hover:bg-[#2a2a2a]'
             }`}
           >
             Results ({Object.keys(data.response_inputs || {}).length})
@@ -50,8 +50,8 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
               onClick={() => setActiveTab('errors')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'errors'
-                  ? 'text-white border-b-2 border-red-500'
-                  : 'text-gray-300 hover:text-white'
+                  ? 'text-white border-b-2 border-red-500 bg-[#2a2a2a]'
+                  : 'text-gray-300 hover:text-white hover:bg-[#2a2a2a]'
               }`}
             >
               Errors ({Object.keys(data.errors || {}).length})
@@ -60,9 +60,9 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
         </div>
 
         {/* Content */}
-        <div className="p-4 max-h-96 overflow-y-auto">
+        <div className="p-4 max-h-96 overflow-y-auto bg-[#1a1a1a]">
           {!isSuccess ? (
-            <div className="bg-red-900 bg-opacity-20 border border-red-600 rounded-lg p-4">
+            <div className="bg-red-900 bg-opacity-30 border border-red-600 rounded-lg p-4">
               <h3 className="text-red-300 font-medium mb-2">Execution Failed</h3>
               <p className="text-red-200 text-sm">{results.error || 'Unknown error occurred'}</p>
             </div>
@@ -72,7 +72,7 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
                 <div className="space-y-4">
                   {hasResults && data?.response_inputs ? (
                     Object.entries(data.response_inputs).map(([nodeId, inputs]: [string, any]) => (
-                      <div key={nodeId} className="bg-gray-600 rounded-lg p-4">
+                      <div key={nodeId} className="bg-[#2a2a2a] border border-[#404040] rounded-lg p-4">
                         <h3 className="text-white font-medium mb-2">Response Node: {nodeId}</h3>
                         <div className="space-y-2">
                           {Object.entries(inputs || {}).map(([key, value]: [string, any]) => (
@@ -80,7 +80,7 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
                               <span className="text-gray-300 text-sm font-medium min-w-[100px]">{key}:</span>
                               <div className="flex-1">
                                 {typeof value === 'object' ? (
-                                  <pre className="text-gray-200 text-sm bg-gray-800 p-2 rounded overflow-x-auto">
+                                  <pre className="text-gray-200 text-sm bg-[#1a1a1a] border border-[#404040] p-2 rounded overflow-x-auto">
                                     {JSON.stringify(value, null, 2)}
                                   </pre>
                                 ) : (
@@ -103,7 +103,7 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
               {activeTab === 'errors' && hasErrors && data?.errors && (
                 <div className="space-y-4">
                   {Object.entries(data.errors).map(([nodeId, error]: [string, any]) => (
-                    <div key={nodeId} className="bg-red-900 bg-opacity-20 border border-red-600 rounded-lg p-4">
+                    <div key={nodeId} className="bg-red-900 bg-opacity-30 border border-red-600 rounded-lg p-4">
                       <h3 className="text-red-300 font-medium mb-2">Node: {nodeId}</h3>
                       <p className="text-red-200 text-sm">{String(error)}</p>
                     </div>
@@ -121,14 +121,14 @@ export default function ExecutionResults({ results, onClose }: ExecutionResultsP
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-600 bg-gray-800">
+        <div className="flex items-center justify-between p-4 border-t border-[#404040] bg-[#2a2a2a]">
           <div className="text-sm text-gray-300">
             Executed {data.executed_nodes?.length || 0} nodes
           </div>
           <div className="flex space-x-2">
             <button
               onClick={() => navigator.clipboard.writeText(JSON.stringify(results, null, 2))}
-              className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white text-sm rounded transition-colors"
+              className="px-3 py-1 bg-[#404040] hover:bg-[#4a4a4a] text-white text-sm rounded transition-colors border border-[#666666]"
             >
               Copy Results
             </button>

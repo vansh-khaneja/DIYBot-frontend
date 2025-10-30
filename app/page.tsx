@@ -426,7 +426,7 @@ function WelcomeForm({ onSubmit }: WelcomeFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-800 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
       <div className="bg-gray-600 p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
         {/* Logo */}
         <div className="flex items-center justify-center mb-6">
@@ -471,7 +471,7 @@ function WelcomeForm({ onSubmit }: WelcomeFormProps) {
 
 function Sidebar() {
   return (
-    <div className="w-64 bg-gray-800 h-screen flex flex-col">
+    <div className="w-64 bg-gray-900 h-screen flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center space-x-3">
@@ -526,7 +526,7 @@ function MainContent({ userName }: { userName: string }) {
   ];
 
   return (
-    <div className="flex-1 bg-gray-800">
+    <div className="flex-1 bg-black">
       {/* Header */}
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center justify-between">
@@ -644,7 +644,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-800">
+    <div className="flex h-screen bg-black">
       <Sidebar />
       <MainContent userName={userName} />
     </div>

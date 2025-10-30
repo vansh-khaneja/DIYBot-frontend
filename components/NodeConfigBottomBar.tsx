@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Node } from '@xyflow/react';
+import DeclarativeUIRenderer from './DeclarativeUIRenderer';
 
 interface NodeSchema {
   node_id: string;
@@ -27,11 +28,43 @@ interface NodeSchema {
     default_value: any;
     options: string[] | null;
   }>;
+  styling: {
+    icon?: string;
+    background_color?: string;
+    border_color?: string;
+    text_color?: string;
+    custom_css?: string;
+    subtitle?: string;
+    icon_position?: string;
+    shape?: 'rectangle' | 'circle' | 'rounded' | 'custom';
+    width?: number;
+    height?: number;
+    html_template?: string;
+    css_classes?: string;
+    inline_styles?: string;
+  };
+  ui_config?: {
+    node_id: string;
+    node_name: string;
+    groups: Array<{
+      name: string;
+      label: string;
+      description?: string;
+      components: Array<any>;
+      collapsible?: boolean;
+      collapsed?: boolean;
+      styling?: Record<string, any>;
+    }>;
+    global_styling?: Record<string, any>;
+    layout?: string;
+    columns?: number;
+  };
 }
 
 interface NodeData {
   nodeSchema: NodeSchema;
   parameters: Record<string, any>;
+  [key: string]: any; // Add index signature for compatibility
 }
 
 interface CustomNode extends Node {
@@ -76,7 +109,7 @@ export default function NodeConfigBottomBar({
   const nodeSchema = selectedNode.data.nodeSchema;
 
   return (
-    <div className="bg-gray-700 border-t border-gray-600 p-4">
+    <div className="bg-gray-800 border-t border-gray-600 p-4 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -98,89 +131,19 @@ export default function NodeConfigBottomBar({
           </button>
         </div>
 
-        {/* Parameters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {nodeSchema.parameters.map((param) => (
-            <div key={param.name} className="space-y-2">
-              <label className={`block text-sm font-medium ${
-                param.required ? 'text-white' : 'text-gray-400'
-              }`}>
-                {param.name}
-                {param.required && <span className="text-red-400 ml-1">*</span>}
-              </label>
-
-              {param.type === 'string' && (
-                <div>
-                  {param.options ? (
-                    <select
-                      value={parameters[param.name] || param.default_value || ''}
-                      onChange={(e) => handleParameterChange(param.name, e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        param.required
-                          ? 'bg-gray-600 border-gray-500 text-white'
-                          : 'bg-gray-700 border-gray-600 text-gray-300'
-                      }`}
-                    >
-                      <option value="">Select {param.name}</option>
-                      {param.options.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={parameters[param.name] || param.default_value || ''}
-                      onChange={(e) => handleParameterChange(param.name, e.target.value)}
-                      placeholder={`Enter ${param.name}`}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                        param.required
-                          ? 'bg-gray-600 border-gray-500 text-white placeholder-gray-300'
-                          : 'bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-500'
-                      }`}
-                    />
-                  )}
-                </div>
-              )}
-
-              {param.type === 'integer' && (
-                <input
-                  type="number"
-                  value={parameters[param.name] || param.default_value || ''}
-                  onChange={(e) => handleParameterChange(param.name, parseInt(e.target.value) || 0)}
-                  placeholder={`Enter ${param.name}`}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    param.required
-                      ? 'bg-gray-600 border-gray-500 text-white placeholder-gray-300'
-                      : 'bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-500'
-                  }`}
-                />
-              )}
-
-              {param.type === 'float' && (
-                <input
-                  type="number"
-                  step="0.1"
-                  value={parameters[param.name] || param.default_value || ''}
-                  onChange={(e) => handleParameterChange(param.name, parseFloat(e.target.value) || 0)}
-                  placeholder={`Enter ${param.name}`}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    param.required
-                      ? 'bg-gray-600 border-gray-500 text-white placeholder-gray-300'
-                      : 'bg-gray-700 border-gray-600 text-gray-300 placeholder-gray-500'
-                  }`}
-                />
-              )}
-
-              <p className={`text-xs ${
-                param.required ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                {param.description}
-              </p>
-            </div>
-          ))}
-        </div>
+        {/* Declarative UI Configuration */}
+        {nodeSchema.ui_config ? (
+          <DeclarativeUIRenderer
+            uiConfig={nodeSchema.ui_config}
+            parameters={parameters}
+            onParameterChange={handleParameterChange}
+          />
+        ) : (
+          <div className="text-center text-gray-400 py-8">
+            <p>No UI configuration available for this node.</p>
+            <p className="text-sm mt-2">This node needs to be updated to use the declarative UI system.</p>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-3 mt-6">
